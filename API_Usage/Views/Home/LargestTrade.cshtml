@@ -1,0 +1,20 @@
+﻿@model CampaniesLargestTrades
+
+@{
+    ViewData["Title"] = "LargestTrade";
+}
+
+<h2>Chart</h2>
+<h4>Run symbols and save data if the drop down list is empty</h4>
+<hr />
+
+<form asp-controller="Home" asp-action="LargestTrade" method="get">
+    <select name="symbol">
+        @foreach (var company in Model.Companies)
+        {
+            <option value=@company.symbol selected>@company.name</option>
+        }
+    </select>
+    <input type="submit" value="Get Chart" />
+</form>
+

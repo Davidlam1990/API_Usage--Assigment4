@@ -37,4 +37,5 @@ namespace API_Usage.Models
   {
     public Equity[] chart { get; set; }
   }
+
 }

@@ -16,10 +16,14 @@ using System.Linq;
  *    how to use similar methods to access Azure ML models
 */
 
+
+
 namespace API_Usage.Controllers
 {
   public class HomeController : Controller
   {
+
+    /*---------------------------------------------------------------------------------------------*/
     public ApplicationDbContext dbContext;
 
     //Base URL for the IEXTrading API. Method specific URLs are appended to this base URL.
@@ -37,35 +41,106 @@ namespace API_Usage.Controllers
       httpClient = new HttpClient();
       httpClient.DefaultRequestHeaders.Accept.Clear();
       httpClient.DefaultRequestHeaders.Accept.Add(new
-          System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+      System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
     }
 
+    /*---------------------------------------------------------------------------------------------*/
+
+    /*------Home Page------*/
     public IActionResult Index()
     {
       return View();
     }
 
+    /*-------------------------------------------------------------------------------------------*/
+    /*--------------------------------------Symbols----------------------------------------------*/
+
     /****
-     * The Symbols action calls the GetSymbols method that returns a list of Companies.
-     * This list of Companies is passed to the Symbols View.
-    ****/
+         * The Symbols action calls the GetSymbols method that returns a list of Companies.
+         * This list of Companies is passed to the Symbols View.
+        ****/
     public IActionResult Symbols()
-    {
-      //Set ViewBag variable first
-      ViewBag.dbSucessComp = 0;
-      List<Company> companies = GetSymbols();
+        {
+          //Set ViewBag variable first
+          ViewBag.dbSucessComp = 0;
+          List<Company> companies = GetSymbols();
 
-      //Save companies in TempData, so they do not have to be retrieved again
-      TempData["Companies"] = JsonConvert.SerializeObject(companies);
-      //TempData["Companies"] = companies;
+          //Save companies in TempData, so they do not have to be retrieved again
+          TempData["Companies"] = JsonConvert.SerializeObject(companies);
+          //TempData["Companies"] = companies;
 
-      return View(companies);
-    }
+          return View(companies);
+        }
 
+    /// <summary>
+        /// Calls the IEX reference API to get the list of symbols
+        /// </summary>
+        /// <returns>A list of the companies whose information is available</returns>
+    public List<Company> GetSymbols()
+        {
+            string IEXTrading_API_PATH = BASE_URL + "ref-data/symbols";
+            string companyList = "";
+            List<Company> companies = null;
+
+            // connect to the IEXTrading API and retrieve information
+            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+
+            // read the Json objects in the API response
+            if (response.IsSuccessStatusCode)
+            {
+                companyList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            // now, parse the Json strings as C# objects
+            if (!companyList.Equals(""))
+            {
+                // https://stackoverflow.com/a/46280739
+                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
+                companies = JsonConvert.DeserializeObject<List<Company>>(companyList);
+                companies = companies.GetRange(0, 50);
+            }
+
+            return companies;
+        }
+
+    /// <summary>
+        /// Save the available symbols in the database
+        /// </summary>
+        /// <returns></returns>
+    public IActionResult PopulateSymbols()
+        {
+            // retrieve the companies that were saved in the symbols method
+            // saving in TempData is extremely inefficient - the data circles back from the browser
+            // better methods would be to serialize to the hard disk, or save directly into the database
+            //  in the symbols method. This example has been structured to demonstrate one way to save object data
+            //  and retrieve it later
+            List<Company> companies = JsonConvert.DeserializeObject<List<Company>>(TempData["Companies"].ToString());
+
+            foreach (Company company in companies)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                //So add company only if it doesnt exist, check existence using symbol (PK)
+                if (dbContext.Companies.Where(c => c.symbol.Equals(company.symbol)).Count() == 0)
+                {
+                    dbContext.Companies.Add(company);
+                }
+            }
+
+            dbContext.SaveChanges();
+            ViewBag.dbSuccessComp = 1;
+            return View("Symbols", companies);
+        }
+
+    /*--------------------------------------------------------------------------------------------------*/
+    /*--------------------------------------End of Symbols----------------------------------------------*/
+
+    /*-------------------------------------------------------------------------------------------*/
+    /*--------------------------------------Chart------------------------------------------------*/
     /****
-     * The Chart action calls the GetChart method that returns 1 year's equities for the passed symbol.
-     * A ViewModel CompaniesEquities containing the list of companies, prices, volumes, avg price and volume.
-     * This ViewModel is passed to the Chart view.
+        * The Chart action calls the GetChart method that returns 1 year's equities for the passed symbol.
+        * A ViewModel CompaniesEquities containing the list of companies, prices, volumes, avg price and volume.
+        * This ViewModel is passed to the Chart view.
     ****/
     /// <summary>
     /// The Chart action calls the GetChart method that returns 1 year's equities for the passed symbol.
@@ -91,37 +166,6 @@ namespace API_Usage.Controllers
       return View(companiesEquities);
     }
 
-    /// <summary>
-    /// Calls the IEX reference API to get the list of symbols
-    /// </summary>
-    /// <returns>A list of the companies whose information is available</returns>
-    public List<Company> GetSymbols()
-    {
-      string IEXTrading_API_PATH = BASE_URL + "ref-data/symbols";
-      string companyList = "";
-      List<Company> companies = null;
-
-      // connect to the IEXTrading API and retrieve information
-      httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
-      HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
-
-      // read the Json objects in the API response
-      if (response.IsSuccessStatusCode)
-      {
-        companyList = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-      }
-
-      // now, parse the Json strings as C# objects
-      if (!companyList.Equals(""))
-      {
-        // https://stackoverflow.com/a/46280739
-        //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
-        companies = JsonConvert.DeserializeObject<List<Company>>(companyList);
-        companies = companies.GetRange(0, 50);
-      }
-
-      return companies;
-    }
 
     /// <summary>
     /// Calls the IEX stock API to get 1 year's chart for the supplied symbol
@@ -166,18 +210,31 @@ namespace API_Usage.Controllers
     }
 
     /// <summary>
-    /// Call the ClearTables method to delete records from a table or all tables.
-    ///  Count of current records for each table is passed to the Refresh View
+    /// Use the data provided to assemble the ViewModel
     /// </summary>
-    /// <param name="tableToDel">Table to clear</param>
-    /// <returns>Refresh view</returns>
-    public IActionResult Refresh(string tableToDel)
+    /// <param name="equities">Quotes to dsiplay</param>
+    /// <returns>The view model to include </returns>
+    public CompaniesEquities getCompaniesEquitiesModel(List<Equity> equities)
     {
-      ClearTables(tableToDel);
-      Dictionary<string, int> tableCount = new Dictionary<string, int>();
-      tableCount.Add("Companies", dbContext.Companies.Count());
-      tableCount.Add("Charts", dbContext.Equities.Count());
-      return View(tableCount);
+        List<Company> companies = dbContext.Companies.ToList();
+
+        if (equities.Count == 0)
+        {
+            return new CompaniesEquities(companies, null, "", "", "", 0, 0);
+        }
+
+        Equity current = equities.Last();
+
+        // create appropriately formatted strings for use by chart.js
+        string dates = string.Join(",", equities.Select(e => e.date));
+        string prices = string.Join(",", equities.Select(e => e.high));
+        float avgprice = equities.Average(e => e.high);
+
+        //Divide volumes by million to scale appropriately
+        string volumes = string.Join(",", equities.Select(e => e.volume / 1000000));
+        double avgvol = equities.Average(e => e.volume) / 1000000;
+
+        return new CompaniesEquities(companies, equities.Last(), dates, prices, volumes, avgprice, avgvol);
     }
 
     /// <summary>
@@ -187,80 +244,47 @@ namespace API_Usage.Controllers
     /// <returns>Chart view for the company</returns>
     public IActionResult SaveCharts(string symbol)
     {
-      List<Equity> equities = GetChart(symbol);
+        List<Equity> equities = GetChart(symbol);
 
-      // save the quote if the quote has not already been saved in the database
-      foreach (Equity equity in equities)
-      {
-        if (dbContext.Equities.Where(c => c.date.Equals(equity.date)).Count() == 0)
+        // save the quote if the quote has not already been saved in the database
+        foreach (Equity equity in equities)
         {
-          dbContext.Equities.Add(equity);
+            if (dbContext.Equities.Where(c => c.date.Equals(equity.date)).Count() == 0)
+            {
+                dbContext.Equities.Add(equity);
+            }
         }
-      }
 
-      // persist the data
-      dbContext.SaveChanges();
+        // persist the data
+        dbContext.SaveChanges();
 
-      // populate the models to render in the view
-      ViewBag.dbSuccessChart = 1;
-      CompaniesEquities companiesEquities = getCompaniesEquitiesModel(equities);
-      return View("Chart", companiesEquities);
+        // populate the models to render in the view
+        ViewBag.dbSuccessChart = 1;
+        CompaniesEquities companiesEquities = getCompaniesEquitiesModel(equities);
+        return View("Chart", companiesEquities);
     }
 
-    /// <summary>
-    /// Use the data provided to assemble the ViewModel
-    /// </summary>
-    /// <param name="equities">Quotes to dsiplay</param>
-    /// <returns>The view model to include </returns>
-    public CompaniesEquities getCompaniesEquitiesModel(List<Equity> equities)
+    /*----------------------------------------------------------------------------------------------*/
+    /*--------------------------------------End Of Chart--------------------------------------------*/
+
+
+    /*---------------------------------------------------------------------------------------------*/
+    /*--------------------------------------Refresh------------------------------------------------*/
+        /// <summary>
+        /// Call the ClearTables method to delete records from a table or all tables.
+        ///  Count of current records for each table is passed to the Refresh View
+        /// </summary>
+        /// <param name="tableToDel">Table to clear</param>
+        /// <returns>Refresh view</returns>
+    public IActionResult Refresh(string tableToDel)
     {
-      List<Company> companies = dbContext.Companies.ToList();
-
-      if (equities.Count == 0)
-      {
-        return new CompaniesEquities(companies, null, "", "", "", 0, 0);
-      }
-
-      Equity current = equities.Last();
-
-      // create appropriately formatted strings for use by chart.js
-      string dates = string.Join(",", equities.Select(e => e.date));
-      string prices = string.Join(",", equities.Select(e => e.high));
-      float avgprice = equities.Average(e => e.high);
-
-      //Divide volumes by million to scale appropriately
-      string volumes = string.Join(",", equities.Select(e => e.volume / 1000000));
-      double avgvol = equities.Average(e => e.volume) / 1000000;
-
-      return new CompaniesEquities(companies, equities.Last(), dates, prices, volumes, avgprice, avgvol);
-    }
-
-    /// <summary>
-    /// Save the available symbols in the database
-    /// </summary>
-    /// <returns></returns>
-    public IActionResult PopulateSymbols()
-    {
-      // retrieve the companies that were saved in the symbols method
-      // saving in TempData is extremely inefficient - the data circles back from the browser
-      // better methods would be to serialize to the hard disk, or save directly into the database
-      //  in the symbols method. This example has been structured to demonstrate one way to save object data
-      //  and retrieve it later
-      List<Company> companies = JsonConvert.DeserializeObject<List<Company>>(TempData["Companies"].ToString());
-
-      foreach (Company company in companies)
-      {
-        //Database will give PK constraint violation error when trying to insert record with existing PK.
-        //So add company only if it doesnt exist, check existence using symbol (PK)
-        if (dbContext.Companies.Where(c => c.symbol.Equals(company.symbol)).Count() == 0)
-        {
-          dbContext.Companies.Add(company);
-        }
-      }
-
-      dbContext.SaveChanges();
-      ViewBag.dbSuccessComp = 1;
-      return View("Symbols", companies);
+      ClearTables(tableToDel);
+      Dictionary<string, int> tableCount = new Dictionary<string, int>();
+      tableCount.Add("Companies", dbContext.Companies.Count());
+      tableCount.Add("Charts", dbContext.Equities.Count());
+      tableCount.Add("Trades", dbContext.Trades.Count());
+      tableCount.Add("EffectiveSpreads", dbContext.EffectiveSpreads.Count());
+      return View(tableCount);
     }
 
     /// <summary>
@@ -274,6 +298,7 @@ namespace API_Usage.Controllers
         //First remove equities and then the companies
         dbContext.Equities.RemoveRange(dbContext.Equities);
         dbContext.Companies.RemoveRange(dbContext.Companies);
+        dbContext.Trades.RemoveRange(dbContext.Trades);
       }
       else if ("Companies".Equals(tableToDel))
       {
@@ -286,7 +311,411 @@ namespace API_Usage.Controllers
       {
         dbContext.Equities.RemoveRange(dbContext.Equities);
       }
-      dbContext.SaveChanges();
+     else if ("Trades".Equals(tableToDel))
+     {
+        dbContext.Trades.RemoveRange(dbContext.Trades);
+     }
+    else if ("EffectiveSpreads".Equals(tableToDel))
+    {
+        dbContext.EffectiveSpreads.RemoveRange(dbContext.EffectiveSpreads);
     }
-  }
+
+            dbContext.SaveChanges();
+    }
+    /*----------------------------------------------------------------------------------------------------*/
+    /*--------------------------------------End of Refresh------------------------------------------------*/
+
+
+
+    /*----------------------------------------------------------------------------------------------------*/
+    /*---------------------------------Largest Trades API!!!-------------------------------------------------*/
+
+    public IActionResult Trade(string symbol)
+        {
+            //Set ViewBag variable first
+            ViewBag.dbSuccessChart = 0;
+            List<Trade> trades = new List<Trade>();
+
+            if (symbol != null)
+            {
+                trades = GetTrades(symbol);
+                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
+            }
+
+            TradeVM tradeViewModel = getTradeVM(trades);
+
+            return View(tradeViewModel);
+        }
+
+    public List<Trade> GetTrades(string symbol)
+        {
+            // string to specify information to be retrieved from the API
+            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/largest-trades";
+
+            // initialize objects needed to gather data
+            string trades = "";
+            List<Trade> Trades = new List<Trade>();
+            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+
+            // connect to the API and obtain the response
+            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+
+            // now, obtain the Json objects in the response as a string
+            if (response.IsSuccessStatusCode)
+            {
+                trades = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            // parse the string into appropriate objects
+            if (!trades.Equals(""))
+            {
+                // https://stackoverflow.com/a/46280739
+                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
+                Trades = JsonConvert.DeserializeObject<List<Trade>>(trades);
+                //trades = trades.GetRange(0, 50);
+            }
+
+            // fix the relations. By default the quotes do not have the company symbol
+            //  this symbol serves as the foreign key in the database and connects the quote to the company
+            foreach (Trade Trade in Trades)
+            {
+                Trade.symbol = symbol;
+            }
+
+            return Trades;
+        }
+
+    public TradeVM getTradeVM(List<Trade> trades)
+        {
+            List<Company> companies = dbContext.Companies.ToList();
+
+            if (trades.Count == 0)
+            {
+                return new TradeVM(companies, null);
+            }
+            Trade current = trades.Last();
+            return new TradeVM(companies, trades.Last());
+        }
+
+    public IActionResult SaveTrades(string symbol)
+        {
+            List<Trade> trades = GetTrades(symbol);
+
+            // save the quote if the quote has not already been saved in the database
+
+            foreach (Trade trade in trades)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                //So add company only if it doesnt exist, check existence using symbol (PK)
+                if (dbContext.Trades.Where(c => c.TradeId.Equals(trade.TradeId)).Count() == 0)
+                {
+                    dbContext.Trades.Add(trade);
+                }
+            }
+
+            // persist the data
+            dbContext.SaveChanges();
+
+            // populate the models to render in the view
+            ViewBag.dbSuccessChart = 1;
+            TradeVM tradeViewModel = getTradeVM(trades);
+            return View("Trade", tradeViewModel);
+        }
+
+
+        /*-------Not working because only return 1 line, need to modify to turn an object instead of list----------*/
+        /*---------------------------------Key Stats API!!!------------------------------------------------------------*/
+        /*
+        public IActionResult Keystat(string symbol)
+        {
+            //Set ViewBag variable first
+            ViewBag.dbSuccessChart = 0;
+            List<Keystat> keystats = new List<Keystat>();
+
+            if (symbol != null)
+            {
+                keystats = GetKeyStats(symbol);
+                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
+            }
+
+            KeyStatVM keystatsViewModel = getKeyStatVM(keystats);
+
+            return View(keystatsViewModel);
+        }
+
+        public List<Keystat> GetKeyStats(string symbol)
+        {
+            // string to specify information to be retrieved from the API
+            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/stats";
+
+            // initialize objects needed to gather data
+            string keystats = "";
+            List<Keystat> Stats = new List<Keystat>();
+            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+
+            // connect to the API and obtain the response
+            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+
+            // now, obtain the Json objects in the response as a string
+            if (response.IsSuccessStatusCode)
+            {
+                keystats = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            // parse the string into appropriate objects
+            if (!keystats.Equals(""))
+            {
+                // https://stackoverflow.com/a/46280739
+                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
+                Stats = JsonConvert.DeserializeObject<List<Keystat>>(keystats);
+                //Trades = JsonConvert.DeserializeObject<List<Trade>>(trades);
+                //trades = trades.GetRange(0, 50);
+            }
+
+            // fix the relations. By default the quotes do not have the company symbol
+            //  this symbol serves as the foreign key in the database and connects the quote to the company
+            foreach (Keystat Keystat in Stats)
+            {
+                Keystat.symbol = symbol;
+            }
+
+            return Stats;
+        }
+
+        public KeyStatVM getKeyStatVM(List<Keystat> keystats)
+        {
+            List<Company> companies = dbContext.Companies.ToList();
+
+            if (keystats.Count == 0)
+            {
+                return new KeyStatVM(companies, null);
+            }
+            Keystat current = keystats.Last();
+            return new KeyStatVM(companies, keystats.Last());
+        }
+
+        public IActionResult SaveStats(string symbol)
+        {
+            List<Keystat> keystats = GetKeyStats(symbol);
+
+            // save the quote if the quote has not already been saved in the database
+
+            foreach (Keystat keystat in keystats)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                //So add company only if it doesnt exist, check existence using symbol (PK)
+                if (dbContext.Keystats.Where(c => c.KeystatId.Equals(keystat.KeystatId)).Count() == 0)
+                {
+                    dbContext.Keystats.Add(keystat);
+                }
+            }
+
+            // persist the data
+            dbContext.SaveChanges();
+
+            // populate the models to render in the view
+            ViewBag.dbSuccessChart = 1;
+            KeyStatVM keystatsViewModel = getKeyStatVM(keystats);
+            return View("Keystat", keystatsViewModel);
+        }
+
+    */
+
+        /*-------Not working because only return 1 line, need to modify to turn an object instead of list----------*/
+        /*---------------------------------Previosu API!!!-------------------------------------------------------*/
+        /*
+         * public IActionResult Previous(string symbol)
+        {
+            //Set ViewBag variable first
+            ViewBag.dbSuccessChart = 0;
+            List<Previous> previouses = new List<Previous>();
+
+            if (symbol != null)
+            {
+                previouses = GetPrevious(symbol);
+                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
+            }
+
+            PreviousVM previousViewModel = getPreviousVM(previouses);
+
+            return View(previousViewModel);
+        }
+
+        public List<Previous> GetPrevious(string symbol)
+        {
+            // string to specify information to be retrieved from the API
+            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/previous";
+
+            // initialize objects needed to gather data
+            string previouses = "";
+            List<Previous> Previouses = new List<Previous>();
+            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+
+            // connect to the API and obtain the response
+            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+
+            // now, obtain the Json objects in the response as a string
+            if (response.IsSuccessStatusCode)
+            {
+                previouses = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            }
+
+            // parse the string into appropriate objects
+            if (!previouses.Equals(""))
+            {
+                // https://stackoverflow.com/a/46280739
+                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
+                Previouses = JsonConvert.DeserializeObject<List<Previous>>(previouses);
+                //trades = trades.GetRange(0, 50);
+            }
+
+            // fix the relations. By default the quotes do not have the company symbol
+            //  this symbol serves as the foreign key in the database and connects the quote to the company
+            foreach (Previous Previous in Previouses)
+            {
+                Previous.symbol = symbol;
+            }
+
+            return Previouses;
+        }
+
+        public PreviousVM getPreviousVM(List<Previous> previouses)
+        {
+            List<Company> companies = dbContext.Companies.ToList();
+
+            if (previouses.Count == 0)
+            {
+                return new PreviousVM(companies, null);
+            }
+            Previous current = previouses.Last();
+            return new PreviousVM(companies, previouses.Last());
+        }
+
+        public IActionResult SavePrevious(string symbol)
+
+        {
+            List<Previous> previouses = GetPrevious(symbol);
+
+            // save the quote if the quote has not already been saved in the database
+
+            foreach (Previous previous in previouses)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                //So add company only if it doesnt exist, check existence using symbol (PK)
+                if (dbContext.Previouses.Where(c => c.PreviousId.Equals(previous.PreviousId)).Count() == 0)
+                {
+                    dbContext.Previouses.Add(previous);
+
+                }
+            }
+
+            // persist the data
+            dbContext.SaveChanges();
+
+            // populate the models to render in the view
+            ViewBag.dbSuccessChart = 1;
+            PreviousVM previousViewModel = getPreviousVM(previouses);
+            return View("Previous", previousViewModel);
+        }
+       */
+
+    /*-----------------------------------------------------------------------------------------------------*/
+    /*---------------------------------Effective Spread API!!!-------------------------------------------------*/
+
+    public IActionResult EffectiveSpread(string symbol)
+    {
+        //Set ViewBag variable first
+        ViewBag.dbSuccessChart = 0;
+        List<EffectiveSpread> effectivespreads = new List<EffectiveSpread>();
+
+        if (symbol != null)
+        {
+            effectivespreads = GetEffctiveSpreads(symbol);
+            //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
+        }
+
+        EffectiveSpreadVM effectiveSpreadViewModel = getEffectiveSpreadVM(effectivespreads);
+
+        return View(effectiveSpreadViewModel);
+    }
+
+    public List<EffectiveSpread> GetEffctiveSpreads(string symbol)
+    {
+        // string to specify information to be retrieved from the API
+        string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/effective-spread";
+
+        // initialize objects needed to gather data
+        string effectivespreads = "";
+        List<EffectiveSpread> EffectiveSpreads = new List<EffectiveSpread>();
+        httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+
+        // connect to the API and obtain the response
+        HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+
+        // now, obtain the Json objects in the response as a string
+        if (response.IsSuccessStatusCode)
+        {
+            effectivespreads = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+        }
+
+        // parse the string into appropriate objects
+        if (!effectivespreads.Equals(""))
+        {
+            // https://stackoverflow.com/a/46280739
+            //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
+            EffectiveSpreads = JsonConvert.DeserializeObject<List<EffectiveSpread>>(effectivespreads);
+            //trades = trades.GetRange(0, 50);
+        }
+
+        // fix the relations. By default the quotes do not have the company symbol
+        //  this symbol serves as the foreign key in the database and connects the quote to the company
+        foreach (EffectiveSpread Trade in EffectiveSpreads)
+        {
+            Trade.symbol = symbol;
+        }
+
+        return EffectiveSpreads;
+    }
+
+    public EffectiveSpreadVM getEffectiveSpreadVM(List<EffectiveSpread> effectivespreads)
+    {
+        List<Company> companies = dbContext.Companies.ToList();
+
+        if (effectivespreads.Count == 0)
+        {
+            return new EffectiveSpreadVM(companies, null);
+        }
+        EffectiveSpread current = effectivespreads.Last();
+        return new EffectiveSpreadVM(companies, effectivespreads.Last());
+    }
+
+    public IActionResult SaveEffectiveSpreads(string symbol)
+    {
+        List<EffectiveSpread> effectivespreads = GetEffctiveSpreads(symbol);
+
+        // save the quote if the quote has not already been saved in the database
+
+        foreach (EffectiveSpread effectivespread in effectivespreads)
+        {
+            //Database will give PK constraint violation error when trying to insert record with existing PK.
+            //So add company only if it doesnt exist, check existence using symbol (PK)
+            if (dbContext.EffectiveSpreads.Where(c => c.EffectiveSpreadId.Equals(effectivespread.EffectiveSpreadId)).Count() == 0)
+            {
+                dbContext.EffectiveSpreads.Add(effectivespread);
+            }
+        }
+
+        // persist the data
+        dbContext.SaveChanges();
+
+        // populate the models to render in the view
+        ViewBag.dbSuccessChart = 1;
+        EffectiveSpreadVM effectiveSpreadViewModel = getEffectiveSpreadVM(effectivespreads);
+        return View("EffectiveSpread", effectiveSpreadViewModel);
+    }
+    
+    /*------------------------------------------------------------------------------------------------------------*/
+    /*---------------------------------End of Effective Spread!!!-------------------------------------------------*/
+
+    }
 }
