@@ -284,6 +284,7 @@ namespace API_Usage.Controllers
       tableCount.Add("Charts", dbContext.Equities.Count());
       tableCount.Add("Trades", dbContext.Trades.Count());
       tableCount.Add("EffectiveSpreads", dbContext.EffectiveSpreads.Count());
+      tableCount.Add("Watchlists", dbContext.Watchlists.Count());
       return View(tableCount);
     }
 
@@ -319,334 +320,44 @@ namespace API_Usage.Controllers
     {
         dbContext.EffectiveSpreads.RemoveRange(dbContext.EffectiveSpreads);
     }
+    else if ("Watchlists".Equals(tableToDel))
+    {
+        dbContext.Watchlists.RemoveRange(dbContext.Watchlists);
+    }
 
             dbContext.SaveChanges();
     }
     /*----------------------------------------------------------------------------------------------------*/
     /*--------------------------------------End of Refresh------------------------------------------------*/
 
-
-
-    /*----------------------------------------------------------------------------------------------------*/
-    /*---------------------------------Largest Trades API!!!-------------------------------------------------*/
-
-    public IActionResult Trade(string symbol)
-        {
-            //Set ViewBag variable first
-            ViewBag.dbSuccessChart = 0;
-            List<Trade> trades = new List<Trade>();
-
-            if (symbol != null)
-            {
-                trades = GetTrades(symbol);
-                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
-            }
-
-            TradeVM tradeViewModel = getTradeVM(trades);
-
-            return View(tradeViewModel);
-        }
-
-    public List<Trade> GetTrades(string symbol)
-        {
-            // string to specify information to be retrieved from the API
-            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/largest-trades";
-
-            // initialize objects needed to gather data
-            string trades = "";
-            List<Trade> Trades = new List<Trade>();
-            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
-
-            // connect to the API and obtain the response
-            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
-
-            // now, obtain the Json objects in the response as a string
-            if (response.IsSuccessStatusCode)
-            {
-                trades = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            }
-
-            // parse the string into appropriate objects
-            if (!trades.Equals(""))
-            {
-                // https://stackoverflow.com/a/46280739
-                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
-                Trades = JsonConvert.DeserializeObject<List<Trade>>(trades);
-                //trades = trades.GetRange(0, 50);
-            }
-
-            // fix the relations. By default the quotes do not have the company symbol
-            //  this symbol serves as the foreign key in the database and connects the quote to the company
-            foreach (Trade Trade in Trades)
-            {
-                Trade.symbol = symbol;
-            }
-
-            return Trades;
-        }
-
-    public TradeVM getTradeVM(List<Trade> trades)
-        {
-            List<Company> companies = dbContext.Companies.ToList();
-
-            if (trades.Count == 0)
-            {
-                return new TradeVM(companies, null);
-            }
-            Trade current = trades.Last();
-            return new TradeVM(companies, trades.Last());
-        }
-
-    public IActionResult SaveTrades(string symbol)
-        {
-            List<Trade> trades = GetTrades(symbol);
-
-            // save the quote if the quote has not already been saved in the database
-
-            foreach (Trade trade in trades)
-            {
-                //Database will give PK constraint violation error when trying to insert record with existing PK.
-                //So add company only if it doesnt exist, check existence using symbol (PK)
-                if (dbContext.Trades.Where(c => c.TradeId.Equals(trade.TradeId)).Count() == 0)
-                {
-                    dbContext.Trades.Add(trade);
-                }
-            }
-
-            // persist the data
-            dbContext.SaveChanges();
-
-            // populate the models to render in the view
-            ViewBag.dbSuccessChart = 1;
-            TradeVM tradeViewModel = getTradeVM(trades);
-            return View("Trade", tradeViewModel);
-        }
-
-
-        /*-------Not working because only return 1 line, need to modify to turn an object instead of list----------*/
-        /*---------------------------------Key Stats API!!!------------------------------------------------------------*/
-        /*
-        public IActionResult Keystat(string symbol)
-        {
-            //Set ViewBag variable first
-            ViewBag.dbSuccessChart = 0;
-            List<Keystat> keystats = new List<Keystat>();
-
-            if (symbol != null)
-            {
-                keystats = GetKeyStats(symbol);
-                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
-            }
-
-            KeyStatVM keystatsViewModel = getKeyStatVM(keystats);
-
-            return View(keystatsViewModel);
-        }
-
-        public List<Keystat> GetKeyStats(string symbol)
-        {
-            // string to specify information to be retrieved from the API
-            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/stats";
-
-            // initialize objects needed to gather data
-            string keystats = "";
-            List<Keystat> Stats = new List<Keystat>();
-            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
-
-            // connect to the API and obtain the response
-            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
-
-            // now, obtain the Json objects in the response as a string
-            if (response.IsSuccessStatusCode)
-            {
-                keystats = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            }
-
-            // parse the string into appropriate objects
-            if (!keystats.Equals(""))
-            {
-                // https://stackoverflow.com/a/46280739
-                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
-                Stats = JsonConvert.DeserializeObject<List<Keystat>>(keystats);
-                //Trades = JsonConvert.DeserializeObject<List<Trade>>(trades);
-                //trades = trades.GetRange(0, 50);
-            }
-
-            // fix the relations. By default the quotes do not have the company symbol
-            //  this symbol serves as the foreign key in the database and connects the quote to the company
-            foreach (Keystat Keystat in Stats)
-            {
-                Keystat.symbol = symbol;
-            }
-
-            return Stats;
-        }
-
-        public KeyStatVM getKeyStatVM(List<Keystat> keystats)
-        {
-            List<Company> companies = dbContext.Companies.ToList();
-
-            if (keystats.Count == 0)
-            {
-                return new KeyStatVM(companies, null);
-            }
-            Keystat current = keystats.Last();
-            return new KeyStatVM(companies, keystats.Last());
-        }
-
-        public IActionResult SaveStats(string symbol)
-        {
-            List<Keystat> keystats = GetKeyStats(symbol);
-
-            // save the quote if the quote has not already been saved in the database
-
-            foreach (Keystat keystat in keystats)
-            {
-                //Database will give PK constraint violation error when trying to insert record with existing PK.
-                //So add company only if it doesnt exist, check existence using symbol (PK)
-                if (dbContext.Keystats.Where(c => c.KeystatId.Equals(keystat.KeystatId)).Count() == 0)
-                {
-                    dbContext.Keystats.Add(keystat);
-                }
-            }
-
-            // persist the data
-            dbContext.SaveChanges();
-
-            // populate the models to render in the view
-            ViewBag.dbSuccessChart = 1;
-            KeyStatVM keystatsViewModel = getKeyStatVM(keystats);
-            return View("Keystat", keystatsViewModel);
-        }
-
-    */
-
-        /*-------Not working because only return 1 line, need to modify to turn an object instead of list----------*/
-        /*---------------------------------Previosu API!!!-------------------------------------------------------*/
-        /*
-         * public IActionResult Previous(string symbol)
-        {
-            //Set ViewBag variable first
-            ViewBag.dbSuccessChart = 0;
-            List<Previous> previouses = new List<Previous>();
-
-            if (symbol != null)
-            {
-                previouses = GetPrevious(symbol);
-                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
-            }
-
-            PreviousVM previousViewModel = getPreviousVM(previouses);
-
-            return View(previousViewModel);
-        }
-
-        public List<Previous> GetPrevious(string symbol)
-        {
-            // string to specify information to be retrieved from the API
-            string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/previous";
-
-            // initialize objects needed to gather data
-            string previouses = "";
-            List<Previous> Previouses = new List<Previous>();
-            httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
-
-            // connect to the API and obtain the response
-            HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
-
-            // now, obtain the Json objects in the response as a string
-            if (response.IsSuccessStatusCode)
-            {
-                previouses = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-            }
-
-            // parse the string into appropriate objects
-            if (!previouses.Equals(""))
-            {
-                // https://stackoverflow.com/a/46280739
-                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
-                Previouses = JsonConvert.DeserializeObject<List<Previous>>(previouses);
-                //trades = trades.GetRange(0, 50);
-            }
-
-            // fix the relations. By default the quotes do not have the company symbol
-            //  this symbol serves as the foreign key in the database and connects the quote to the company
-            foreach (Previous Previous in Previouses)
-            {
-                Previous.symbol = symbol;
-            }
-
-            return Previouses;
-        }
-
-        public PreviousVM getPreviousVM(List<Previous> previouses)
-        {
-            List<Company> companies = dbContext.Companies.ToList();
-
-            if (previouses.Count == 0)
-            {
-                return new PreviousVM(companies, null);
-            }
-            Previous current = previouses.Last();
-            return new PreviousVM(companies, previouses.Last());
-        }
-
-        public IActionResult SavePrevious(string symbol)
-
-        {
-            List<Previous> previouses = GetPrevious(symbol);
-
-            // save the quote if the quote has not already been saved in the database
-
-            foreach (Previous previous in previouses)
-            {
-                //Database will give PK constraint violation error when trying to insert record with existing PK.
-                //So add company only if it doesnt exist, check existence using symbol (PK)
-                if (dbContext.Previouses.Where(c => c.PreviousId.Equals(previous.PreviousId)).Count() == 0)
-                {
-                    dbContext.Previouses.Add(previous);
-
-                }
-            }
-
-            // persist the data
-            dbContext.SaveChanges();
-
-            // populate the models to render in the view
-            ViewBag.dbSuccessChart = 1;
-            PreviousVM previousViewModel = getPreviousVM(previouses);
-            return View("Previous", previousViewModel);
-        }
-       */
-
-    /*-----------------------------------------------------------------------------------------------------*/
-    /*---------------------------------Effective Spread API!!!-------------------------------------------------*/
-
-    public IActionResult EffectiveSpread(string symbol)
+    /*-------Not working because only return 1 line, need to modify to turn an object instead of list----------*/
+    /*---------------------------------Key Stats API!!!------------------------------------------------------------*/
+    /*
+    public IActionResult Keystat(string symbol)
     {
         //Set ViewBag variable first
         ViewBag.dbSuccessChart = 0;
-        List<EffectiveSpread> effectivespreads = new List<EffectiveSpread>();
+        List<Keystat> keystats = new List<Keystat>();
 
         if (symbol != null)
         {
-            effectivespreads = GetEffctiveSpreads(symbol);
+            keystats = GetKeyStats(symbol);
             //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
         }
 
-        EffectiveSpreadVM effectiveSpreadViewModel = getEffectiveSpreadVM(effectivespreads);
+        KeyStatVM keystatsViewModel = getKeyStatVM(keystats);
 
-        return View(effectiveSpreadViewModel);
+        return View(keystatsViewModel);
     }
 
-    public List<EffectiveSpread> GetEffctiveSpreads(string symbol)
+    public List<Keystat> GetKeyStats(string symbol)
     {
         // string to specify information to be retrieved from the API
-        string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/effective-spread";
+        string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/stats";
 
         // initialize objects needed to gather data
-        string effectivespreads = "";
-        List<EffectiveSpread> EffectiveSpreads = new List<EffectiveSpread>();
+        string keystats = "";
+        List<Keystat> Stats = new List<Keystat>();
         httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
 
         // connect to the API and obtain the response
@@ -655,53 +366,54 @@ namespace API_Usage.Controllers
         // now, obtain the Json objects in the response as a string
         if (response.IsSuccessStatusCode)
         {
-            effectivespreads = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+            keystats = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
         }
 
         // parse the string into appropriate objects
-        if (!effectivespreads.Equals(""))
+        if (!keystats.Equals(""))
         {
             // https://stackoverflow.com/a/46280739
             //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
-            EffectiveSpreads = JsonConvert.DeserializeObject<List<EffectiveSpread>>(effectivespreads);
+            Stats = JsonConvert.DeserializeObject<List<Keystat>>(keystats);
+            //Trades = JsonConvert.DeserializeObject<List<Trade>>(trades);
             //trades = trades.GetRange(0, 50);
         }
 
         // fix the relations. By default the quotes do not have the company symbol
         //  this symbol serves as the foreign key in the database and connects the quote to the company
-        foreach (EffectiveSpread Trade in EffectiveSpreads)
+        foreach (Keystat Keystat in Stats)
         {
-            Trade.symbol = symbol;
+            Keystat.symbol = symbol;
         }
 
-        return EffectiveSpreads;
+        return Stats;
     }
 
-    public EffectiveSpreadVM getEffectiveSpreadVM(List<EffectiveSpread> effectivespreads)
+    public KeyStatVM getKeyStatVM(List<Keystat> keystats)
     {
         List<Company> companies = dbContext.Companies.ToList();
 
-        if (effectivespreads.Count == 0)
+        if (keystats.Count == 0)
         {
-            return new EffectiveSpreadVM(companies, null);
+            return new KeyStatVM(companies, null);
         }
-        EffectiveSpread current = effectivespreads.Last();
-        return new EffectiveSpreadVM(companies, effectivespreads.Last());
+        Keystat current = keystats.Last();
+        return new KeyStatVM(companies, keystats.Last());
     }
 
-    public IActionResult SaveEffectiveSpreads(string symbol)
+    public IActionResult SaveStats(string symbol)
     {
-        List<EffectiveSpread> effectivespreads = GetEffctiveSpreads(symbol);
+        List<Keystat> keystats = GetKeyStats(symbol);
 
         // save the quote if the quote has not already been saved in the database
 
-        foreach (EffectiveSpread effectivespread in effectivespreads)
+        foreach (Keystat keystat in keystats)
         {
             //Database will give PK constraint violation error when trying to insert record with existing PK.
             //So add company only if it doesnt exist, check existence using symbol (PK)
-            if (dbContext.EffectiveSpreads.Where(c => c.EffectiveSpreadId.Equals(effectivespread.EffectiveSpreadId)).Count() == 0)
+            if (dbContext.Keystats.Where(c => c.KeystatId.Equals(keystat.KeystatId)).Count() == 0)
             {
-                dbContext.EffectiveSpreads.Add(effectivespread);
+                dbContext.Keystats.Add(keystat);
             }
         }
 
@@ -710,12 +422,110 @@ namespace API_Usage.Controllers
 
         // populate the models to render in the view
         ViewBag.dbSuccessChart = 1;
-        EffectiveSpreadVM effectiveSpreadViewModel = getEffectiveSpreadVM(effectivespreads);
-        return View("EffectiveSpread", effectiveSpreadViewModel);
+        KeyStatVM keystatsViewModel = getKeyStatVM(keystats);
+        return View("Keystat", keystatsViewModel);
     }
-    
-    /*------------------------------------------------------------------------------------------------------------*/
-    /*---------------------------------End of Effective Spread!!!-------------------------------------------------*/
+
+*/
+
+    /*-------Not working because only return 1 line, need to modify to turn an object instead of list----------*/
+    /*---------------------------------Previosu API!!!-------------------------------------------------------*/
+    /*
+        * public IActionResult Previous(string symbol)
+    {
+        //Set ViewBag variable first
+        ViewBag.dbSuccessChart = 0;
+        List<Previous> previouses = new List<Previous>();
+
+        if (symbol != null)
+        {
+            previouses = GetPrevious(symbol);
+            //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
+        }
+
+        PreviousVM previousViewModel = getPreviousVM(previouses);
+
+        return View(previousViewModel);
+    }
+
+    public List<Previous> GetPrevious(string symbol)
+    {
+        // string to specify information to be retrieved from the API
+        string IEXTrading_API_PATH = BASE_URL + "stock/" + symbol + "/previous";
+
+        // initialize objects needed to gather data
+        string previouses = "";
+        List<Previous> Previouses = new List<Previous>();
+        httpClient.BaseAddress = new Uri(IEXTrading_API_PATH);
+
+        // connect to the API and obtain the response
+        HttpResponseMessage response = httpClient.GetAsync(IEXTrading_API_PATH).GetAwaiter().GetResult();
+
+        // now, obtain the Json objects in the response as a string
+        if (response.IsSuccessStatusCode)
+        {
+            previouses = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+        }
+
+        // parse the string into appropriate objects
+        if (!previouses.Equals(""))
+        {
+            // https://stackoverflow.com/a/46280739
+            //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
+            Previouses = JsonConvert.DeserializeObject<List<Previous>>(previouses);
+            //trades = trades.GetRange(0, 50);
+        }
+
+        // fix the relations. By default the quotes do not have the company symbol
+        //  this symbol serves as the foreign key in the database and connects the quote to the company
+        foreach (Previous Previous in Previouses)
+        {
+            Previous.symbol = symbol;
+        }
+
+        return Previouses;
+    }
+
+    public PreviousVM getPreviousVM(List<Previous> previouses)
+    {
+        List<Company> companies = dbContext.Companies.ToList();
+
+        if (previouses.Count == 0)
+        {
+            return new PreviousVM(companies, null);
+        }
+        Previous current = previouses.Last();
+        return new PreviousVM(companies, previouses.Last());
+    }
+
+    public IActionResult SavePrevious(string symbol)
+
+    {
+        List<Previous> previouses = GetPrevious(symbol);
+
+        // save the quote if the quote has not already been saved in the database
+
+        foreach (Previous previous in previouses)
+        {
+            //Database will give PK constraint violation error when trying to insert record with existing PK.
+            //So add company only if it doesnt exist, check existence using symbol (PK)
+            if (dbContext.Previouses.Where(c => c.PreviousId.Equals(previous.PreviousId)).Count() == 0)
+            {
+                dbContext.Previouses.Add(previous);
+
+            }
+        }
+
+        // persist the data
+        dbContext.SaveChanges();
+
+        // populate the models to render in the view
+        ViewBag.dbSuccessChart = 1;
+        PreviousVM previousViewModel = getPreviousVM(previouses);
+        return View("Previous", previousViewModel);
+    }
+    */
+
 
     }
 }

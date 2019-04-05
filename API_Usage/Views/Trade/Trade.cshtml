@@ -1,14 +1,14 @@
-﻿@model EffectiveSpreadVM
+﻿@model TradeVM
 
 @{
-    ViewData["Title"] = "Effective Spread";
+    ViewData["Title"] = "Trades";
 }
 
-<h2>Effective Spread</h2>
+<h2>Trades</h2>
 <h4>Run symbols and save data if the drop down list is empty</h4>
 <hr />
 
-<form asp-controller="Home" asp-action="EffectiveSpread" method="get">
+<form asp-controller="Trade" asp-action="Trade" method="get">
     <select name="symbol">
         @foreach (var company in Model.Companies)
         {
@@ -27,11 +27,11 @@
         <tbody>
             <tr>
                 <td>
-                    Effective Spread Data
+                    Current Trade Data
                     <table>
                         <tr>
                             <td>
-                                symbol
+                                Symbol
                             </td>
                             <td>
                                 @equity.symbol
@@ -39,10 +39,34 @@
                         </tr>
                         <tr>
                             <td>
-                                volume
+                                price
                             </td>
                             <td>
-                                @equity.volume
+                                @equity.price
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                size
+                            </td>
+                            <td>
+                                @equity.size
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                time
+                            </td>
+                            <td>
+                                @equity.time
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                timeLabel
+                            </td>
+                            <td>
+                                @equity.timeLabel
                             </td>
                         </tr>
                         <tr>
@@ -61,31 +85,6 @@
                                 @equity.venueName
                             </td>
                         </tr>
-                        <tr>
-                            <td>
-                                effectiveSpread
-                            </td>
-                            <td>
-                                @equity.effectiveSpread
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                effectiveQuoted
-                            </td>
-                            <td>
-                                @equity.effectiveQuoted
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                priceImprovement
-                            </td>
-                            <td>
-                                @equity.priceImprovement
-                            </td>
-                        </tr>
-
                     </table>
                 </td>
                 <td>
@@ -94,7 +93,7 @@
                         </div>*@
                 </td>
                 <td>
-                    <a asp-controller="Home" asp-action="SaveEffectiveSpreads" asp-route-symbol="@Model.Current.symbol">
+                    <a asp-controller="Trade" asp-action="SaveTrades" asp-route-symbol="@Model.Current.symbol">
                         <img src="~/img/button_save-data.png" />
                     </a>
                 </td>

@@ -11,6 +11,7 @@ namespace API_Usage.DataAccess
     public DbSet<Equity> Equities { get; set; }
     public DbSet<Trade> Trades { get; set; }
     public DbSet<EffectiveSpread> EffectiveSpreads { get; set; }
-
+    public DbSet<Watchlist> Watchlists{ get; set; }
+        
     }
 }
