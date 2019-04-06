@@ -13,6 +13,10 @@ namespace API_Usage.DataAccess
     public DbSet<EffectiveSpread> EffectiveSpreads { get; set; }
     public DbSet<Watchlist> Watchlists{ get; set; }
     public DbSet<Dividend> Dividends { get; set; }
+    public DbSet<News> News { get; set; }
+    public DbSet<TopGainer> TopGainers { get; set; }
+    public DbSet<TopLoser> TopLosers { get; set; }
+    public DbSet<MostActive> MostActives { get; set; }
 
     }
 }

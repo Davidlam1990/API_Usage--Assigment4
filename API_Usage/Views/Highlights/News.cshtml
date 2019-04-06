@@ -1,0 +1,104 @@
+﻿@model IEnumerable<API_Usage.Models.News>
+
+@{
+    ViewData["Title"] = "Latest News";
+
+}
+<html>
+<head>
+    <style>
+
+
+        /* Create three equal columns that floats next to each other */
+        .column {
+            float: left;
+            width: 100%;
+            padding: 1px;
+            height: 80px;
+            position: relative;
+            font-size: 100%;
+        }
+
+            .column h1 {
+                text-align: center;
+                margin: 0;
+                color: maroon;
+            }
+
+            .column h3 {
+                margin: 0;
+            }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 1px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <div>
+            <a asp-area="" asp-controller="Highlights" asp-action="TopGainers" class="Button">Top Gainers </a><text> | </text>
+            <a asp-area="" asp-controller="Highlights" asp-action="TopLosers" class="Button">Top Losers</a><text> | </text>
+            <a asp-area="" asp-controller="Highlights" asp-action="MostActive" class="Button">Most Active</a><text> | </text>
+        </div>
+    </nav>
+    <h4>
+       Bulletin Board
+    </h4>
+    <table class="column">
+
+        <tbody>
+            <tr style="font-weight:bold">
+                <td>Headline</td>
+                <td>Source</td>
+                <td>Last Updated On</td>
+                <td>SUmmary</td>
+             </tr>
+
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.headline)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.source)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.datetime)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.summary)
+                    </td>
+
+                </tr>
+            }
+
+
+        </tbody>
+
+    </table>
+
+</body>
+</html>
+

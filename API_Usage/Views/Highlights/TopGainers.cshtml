@@ -1,0 +1,134 @@
+﻿@model IEnumerable<API_Usage.Models.TopGainer>
+
+@{
+    ViewData["Title"] = "Top Gainers";
+
+}
+<html>
+<head>
+    <style>
+
+
+        /* Create three equal columns that floats next to each other */
+        .column {
+            float: left;
+            width: 100%;
+            padding: 1px;
+            height: 80px;
+            position: relative;
+            font-size: 100%;
+        }
+
+            .column h1 {
+                text-align: center;
+                margin: 0;
+                color: maroon;
+            }
+
+            .column h3 {
+                margin: 0;
+            }
+
+        /* Clear floats after the columns */
+        .row:after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 1px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div>
+            <a asp-area="" asp-controller="Highlights" asp-action="News" class="Button">Latest News </a><text> | </text>
+            <a asp-area="" asp-controller="Highlights" asp-action="TopLosers" class="Button">Top Losers </a><text> | </text>
+            <a asp-area="" asp-controller="Highlights" asp-action="MostActive" class="Button">Most Active </a><text> | </text>
+        </div>
+    </nav>
+    <h4>
+        Top Gainers of the Day
+    </h4>
+    <table class="column">
+        <tbody>
+            <tr style="font-weight:bold">
+                <td>Symbol- CompanyName</td>
+                <td>Primary Exchange</td>
+                <td>Sector</td>
+                <td>Open</td>
+                <td>Close</td>
+                <td>High</td>
+                <td>Low</td>
+                <td>Latest Price</td>
+                <td>Latest Volume</td>
+                <td>Change</td>
+                <td>Change %</td>
+            </tr>
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.symbol)
+                        <br />
+                        @Html.DisplayFor(modelItem => item.companyName)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.primaryExchange)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.sector)
+                    </td>
+
+                    <td>
+                        @Html.DisplayFor(modelItem => item.open)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.close)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.high)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.low)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.latestPrice)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.latestVolume)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.change)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.changePercent)
+                    </td>
+
+                </tr>
+            }
+
+        </tbody>
+    </table>
+
+
+
+
+</body>
+</html>
+
+
