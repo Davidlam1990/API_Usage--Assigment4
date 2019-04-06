@@ -285,6 +285,7 @@ namespace API_Usage.Controllers
       tableCount.Add("Trades", dbContext.Trades.Count());
       tableCount.Add("EffectiveSpreads", dbContext.EffectiveSpreads.Count());
       tableCount.Add("Watchlists", dbContext.Watchlists.Count());
+      tableCount.Add("Dividends", dbContext.Dividends.Count());
       return View(tableCount);
     }
 
@@ -323,6 +324,10 @@ namespace API_Usage.Controllers
     else if ("Watchlists".Equals(tableToDel))
     {
         dbContext.Watchlists.RemoveRange(dbContext.Watchlists);
+    }
+    else if ("Dividends".Equals(tableToDel))
+    {
+        dbContext.Dividends.RemoveRange(dbContext.Dividends);
     }
 
             dbContext.SaveChanges();

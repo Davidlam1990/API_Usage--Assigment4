@@ -12,6 +12,7 @@ namespace API_Usage.DataAccess
     public DbSet<Trade> Trades { get; set; }
     public DbSet<EffectiveSpread> EffectiveSpreads { get; set; }
     public DbSet<Watchlist> Watchlists{ get; set; }
-        
+    public DbSet<Dividend> Dividends { get; set; }
+
     }
 }
