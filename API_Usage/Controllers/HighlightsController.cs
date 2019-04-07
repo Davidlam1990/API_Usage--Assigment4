@@ -34,7 +34,7 @@ namespace API_Usage.Controllers
         }
 
 
-        // Action Methods for News
+        // Action Methods for pulling latest top 10 News
         public IActionResult News()
         {
             //Set ViewBag variable first
@@ -70,14 +70,8 @@ namespace API_Usage.Controllers
             if (!Newsdetails.Equals(""))
             {
                 NetDet = JsonConvert.DeserializeObject<List<News>>(Newsdetails);
-                //ComDet = ComDet.GetRange(0, 10);
             }
-            else
-            {
-                ViewBag["msg_N"] = "Latest Updates are not available as of Now. Please refresh the page after sometime to get the latest details";
-                return ViewBag["msg_N"];
-            }
-
+           
             return NetDet;
         }
         // **** For fetching data for top gainers****
@@ -118,13 +112,7 @@ namespace API_Usage.Controllers
                 TopG = JsonConvert.DeserializeObject<List<TopGainer>>(TGDetails);
 
             }
-            else
-            {
-                ViewBag["msg_G"] = "Latest Updates are not available as of Now. Please refresh the page after sometime to get the latest details";
-                return ViewBag["msg_G"];
-            }
-
-
+            
             return TopG;
         }
         // **** For fetching data for top losers****
@@ -134,7 +122,7 @@ namespace API_Usage.Controllers
             ViewBag.dbSucessComp = 0;
             List<TopLoser> TopL = GetTopLosers();
 
-            //Save Top Gainers in TempData, so they do not have to be retrieved again
+            //Save Top Losers in TempData, so they do not have to be retrieved again
             TempData["TLDetails"] = JsonConvert.SerializeObject(TopL);
 
             return View(TopL);
@@ -165,11 +153,7 @@ namespace API_Usage.Controllers
                 TopL = JsonConvert.DeserializeObject<List<TopLoser>>(TLDetails);
 
             }
-            else
-            {
-                ViewBag["msg_L"] = "Latest Updates are not available as of Now. Please refresh the page after sometime to get the latest details";
-                return ViewBag["msg_L"];
-            }
+           
 
 
             return TopL;
@@ -181,7 +165,7 @@ namespace API_Usage.Controllers
             ViewBag.dbSucessComp = 0;
             List<MostActive> MA = GetMostActive();
 
-            //Save Top Gainers in TempData, so they do not have to be retrieved again
+            //Save Most Active in TempData, so they do not have to be retrieved again
             TempData["MADetails"] = JsonConvert.SerializeObject(MA);
 
             return View(MA);
@@ -212,13 +196,7 @@ namespace API_Usage.Controllers
                 MA = JsonConvert.DeserializeObject<List<MostActive>>(MADetails);
 
             }
-            else
-            {
-                ViewBag["msg_MA"] = "Latest Updates are not available as of Now. Please refresh the page after sometime to get the latest details";
-                return ViewBag["msg_MA"];
-            }
-
-
+           
             return MA;
         }
     }
