@@ -5,7 +5,7 @@
 }
 
 <h2>Dividends</h2>
-<h4>Run symbols and save data if the drop down list is empty</h4>
+<h4>Run symbols and save data if the drop down list is empty. Please contact IEX Trading if you have any questions about your data !</h4>
 <hr />
 
 <form asp-controller="Dividend" asp-action="Dividend" method="get">
@@ -27,7 +27,7 @@
         <tbody>
             <tr>
                 <td>
-                    Current Trade Data
+                    Dividends Data
                     <table>
                         <tr>
                             <td>
@@ -111,6 +111,5 @@
 }
 
 <script>
-    @*getChart("@Model.Dates", "@Model.Prices", "@Model.Volumes", @Model.AvgPrice, @Model.AvgVolume);*@
     alertDbSave(@ViewBag.dbSuccessChart);
 </script>

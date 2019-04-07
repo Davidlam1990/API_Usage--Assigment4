@@ -5,7 +5,7 @@
 }
 
 <h2>Effective Spread</h2>
-<h4>Run symbols and save data if the drop down list is empty</h4>
+<h4>Run symbols and save data if the drop down list is empty. Please contact IEX Trading if you have any questions about your data !</h4>
 <hr />
 
 <form asp-controller="EffectiveSpread" asp-action="EffectiveSpread" method="get">
@@ -15,7 +15,7 @@
             <option value=@company.symbol selected>@company.name</option>
         }
     </select>
-    <input type="submit" value="Get Trade" />
+    <input type="submit" value="Get Effective Spread" />
 </form>
 
 
@@ -31,7 +31,7 @@
                     <table>
                         <tr>
                             <td>
-                                symbol
+                                Symbol
                             </td>
                             <td>
                                 @equity.symbol
@@ -39,7 +39,7 @@
                         </tr>
                         <tr>
                             <td>
-                                volume
+                                Volume
                             </td>
                             <td>
                                 @equity.volume
@@ -47,7 +47,7 @@
                         </tr>
                         <tr>
                             <td>
-                                venue
+                                Venue
                             </td>
                             <td>
                                 @equity.venue
@@ -55,7 +55,7 @@
                         </tr>
                         <tr>
                             <td>
-                                venueName
+                                Venue Name
                             </td>
                             <td>
                                 @equity.venueName
@@ -63,7 +63,7 @@
                         </tr>
                         <tr>
                             <td>
-                                effectiveSpread
+                                Effective Spread
                             </td>
                             <td>
                                 @equity.effectiveSpread
@@ -71,7 +71,7 @@
                         </tr>
                         <tr>
                             <td>
-                                effectiveQuoted
+                                Effective Quoted
                             </td>
                             <td>
                                 @equity.effectiveQuoted
@@ -79,7 +79,7 @@
                         </tr>
                         <tr>
                             <td>
-                                priceImprovement
+                                Price Improvement
                             </td>
                             <td>
                                 @equity.priceImprovement
@@ -104,6 +104,5 @@
 }
 
 <script>
-    @*getChart("@Model.Dates", "@Model.Prices", "@Model.Volumes", @Model.AvgPrice, @Model.AvgVolume);*@
     alertDbSave(@ViewBag.dbSuccessChart);
 </script>

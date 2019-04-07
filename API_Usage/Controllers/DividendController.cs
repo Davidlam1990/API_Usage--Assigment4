@@ -31,8 +31,8 @@ namespace API_Usage.Controllers
             System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        /*----------------------------------------------------------------------------------------------------*/
-        /*---------------------------------Largest Trades API!!!-------------------------------------------------*/
+        /*---------------------------------------------------------------------------------------------------*/
+        /*--------------------------------- Dividends API!!!-------------------------------------------------*/
 
         public IActionResult Dividend(string symbol)
         {
@@ -43,7 +43,6 @@ namespace API_Usage.Controllers
             if (symbol != null)
             {
                 diviends = GetDividends(symbol);
-                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
             }
 
             DividendVM diviendViewModel = getDividendVM(diviends);
@@ -73,14 +72,10 @@ namespace API_Usage.Controllers
             // parse the string into appropriate objects
             if (!dividends.Equals(""))
             {
-                // https://stackoverflow.com/a/46280739
-                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
                 Dividends = JsonConvert.DeserializeObject<List<Dividend>>(dividends);
-                //trades = trades.GetRange(0, 50);
             }
 
             // fix the relations. By default the quotes do not have the company symbol
-            //  this symbol serves as the foreign key in the database and connects the quote to the company
             foreach (Dividend Dividend in Dividends)
             {
                 Dividend.symbol = symbol;
@@ -110,7 +105,6 @@ namespace API_Usage.Controllers
             foreach (Dividend dividend in dividends)
             {
                 //Database will give PK constraint violation error when trying to insert record with existing PK.
-                //So add company only if it doesnt exist, check existence using symbol (PK)
                 if (dbContext.Dividends.Where(c => c.DividendId.Equals(dividend.DividendId)).Count() == 0)
                 {
                     dbContext.Dividends.Add(dividend);
@@ -125,5 +119,8 @@ namespace API_Usage.Controllers
             DividendVM diviendViewModel = getDividendVM(dividends);
             return View("Dividend", diviendViewModel);
         }
+
+        /*------------------------------------------------------------------------------------------------------*/
+        /*---------------------------------End of Dividends API!!!----------------------------------------------*/
     }
 }
