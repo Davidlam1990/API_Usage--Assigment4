@@ -301,6 +301,9 @@ namespace API_Usage.Controllers
         dbContext.Equities.RemoveRange(dbContext.Equities);
         dbContext.Companies.RemoveRange(dbContext.Companies);
         dbContext.Trades.RemoveRange(dbContext.Trades);
+        dbContext.EffectiveSpreads.RemoveRange(dbContext.EffectiveSpreads);
+        dbContext.Watchlists.RemoveRange(dbContext.Watchlists);
+        dbContext.Dividends.RemoveRange(dbContext.Dividends);
       }
       else if ("Companies".Equals(tableToDel))
       {
@@ -317,18 +320,18 @@ namespace API_Usage.Controllers
      {
         dbContext.Trades.RemoveRange(dbContext.Trades);
      }
-    else if ("EffectiveSpreads".Equals(tableToDel))
-    {
+     else if ("EffectiveSpreads".Equals(tableToDel))
+     {
         dbContext.EffectiveSpreads.RemoveRange(dbContext.EffectiveSpreads);
-    }
-    else if ("Watchlists".Equals(tableToDel))
-    {
+     }
+     else if ("Watchlists".Equals(tableToDel))
+     {
         dbContext.Watchlists.RemoveRange(dbContext.Watchlists);
-    }
-    else if ("Dividends".Equals(tableToDel))
-    {
+     }
+     else if ("Dividends".Equals(tableToDel))
+     {
         dbContext.Dividends.RemoveRange(dbContext.Dividends);
-    }
+     }
 
             dbContext.SaveChanges();
     }

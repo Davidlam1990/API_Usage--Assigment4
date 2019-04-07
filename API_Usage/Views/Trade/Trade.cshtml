@@ -4,8 +4,8 @@
     ViewData["Title"] = "Trades";
 }
 
-<h2>Trades</h2>
-<h4>Run symbols and save data if the drop down list is empty</h4>
+<h2>Largest Trades</h2>
+<h4>Run symbols and save data if the drop down list is empty. Please contact IEX Trading if you have any questions about your data !</h4>
 <hr />
 
 <form asp-controller="Trade" asp-action="Trade" method="get">
@@ -15,7 +15,7 @@
             <option value=@company.symbol selected>@company.name</option>
         }
     </select>
-    <input type="submit" value="Get Trade" />
+    <input type="submit" value="Get Largest Trades" />
 </form>
 
 
@@ -27,7 +27,7 @@
         <tbody>
             <tr>
                 <td>
-                    Current Trade Data
+                    Largest Trades Data
                     <table>
                         <tr>
                             <td>
@@ -39,7 +39,7 @@
                         </tr>
                         <tr>
                             <td>
-                                price
+                                Price
                             </td>
                             <td>
                                 @equity.price
@@ -47,7 +47,7 @@
                         </tr>
                         <tr>
                             <td>
-                                size
+                                Size
                             </td>
                             <td>
                                 @equity.size
@@ -55,7 +55,7 @@
                         </tr>
                         <tr>
                             <td>
-                                time
+                                Time
                             </td>
                             <td>
                                 @equity.time
@@ -63,7 +63,7 @@
                         </tr>
                         <tr>
                             <td>
-                                timeLabel
+                                Time Label
                             </td>
                             <td>
                                 @equity.timeLabel
@@ -71,7 +71,7 @@
                         </tr>
                         <tr>
                             <td>
-                                venue
+                                Venue
                             </td>
                             <td>
                                 @equity.venue
@@ -79,7 +79,7 @@
                         </tr>
                         <tr>
                             <td>
-                                venueName
+                                Venue Name
                             </td>
                             <td>
                                 @equity.venueName
@@ -103,6 +103,5 @@
 }
 
 <script>
-    @*getChart("@Model.Dates", "@Model.Prices", "@Model.Volumes", @Model.AvgPrice, @Model.AvgVolume);*@
     alertDbSave(@ViewBag.dbSuccessChart);
 </script>

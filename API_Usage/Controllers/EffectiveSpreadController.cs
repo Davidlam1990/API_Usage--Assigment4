@@ -31,7 +31,7 @@ namespace API_Usage.Controllers
             System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
         }
 
-        /*-----------------------------------------------------------------------------------------------------*/
+        /*---------------------------------------------------------------------------------------------------------*/
         /*---------------------------------Effective Spread API!!!-------------------------------------------------*/
 
         public IActionResult EffectiveSpread(string symbol)
@@ -43,7 +43,6 @@ namespace API_Usage.Controllers
             if (symbol != null)
             {
                 effectivespreads = GetEffctiveSpreads(symbol);
-                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
             }
 
             EffectiveSpreadVM effectiveSpreadViewModel = getEffectiveSpreadVM(effectivespreads);
@@ -73,10 +72,7 @@ namespace API_Usage.Controllers
             // parse the string into appropriate objects
             if (!effectivespreads.Equals(""))
             {
-                // https://stackoverflow.com/a/46280739
-                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
                 EffectiveSpreads = JsonConvert.DeserializeObject<List<EffectiveSpread>>(effectivespreads);
-                //trades = trades.GetRange(0, 50);
             }
 
             // fix the relations. By default the quotes do not have the company symbol
@@ -105,12 +101,9 @@ namespace API_Usage.Controllers
         {
             List<EffectiveSpread> effectivespreads = GetEffctiveSpreads(symbol);
 
-            // save the quote if the quote has not already been saved in the database
-
             foreach (EffectiveSpread effectivespread in effectivespreads)
             {
                 //Database will give PK constraint violation error when trying to insert record with existing PK.
-                //So add company only if it doesnt exist, check existence using symbol (PK)
                 if (dbContext.EffectiveSpreads.Where(c => c.EffectiveSpreadId.Equals(effectivespread.EffectiveSpreadId)).Count() == 0)
                 {
                     dbContext.EffectiveSpreads.Add(effectivespread);

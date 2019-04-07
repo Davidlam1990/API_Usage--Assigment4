@@ -32,7 +32,7 @@ namespace API_Usage.Controllers
         }
 
         /*----------------------------------------------------------------------------------------------------*/
-        /*---------------------------------Largest Trades API!!!-------------------------------------------------*/
+        /*---------------------------------Largest Trades API!!!----------------------------------------------*/
 
         public IActionResult Trade(string symbol)
         {
@@ -43,7 +43,6 @@ namespace API_Usage.Controllers
             if (symbol != null)
             {
                 trades = GetTrades(symbol);
-                //equities = equities.OrderBy(c => c.date).ToList(); //Make sure the data is in ascending order of date.
             }
 
             TradeVM tradeViewModel = getTradeVM(trades);
@@ -73,10 +72,7 @@ namespace API_Usage.Controllers
             // parse the string into appropriate objects
             if (!trades.Equals(""))
             {
-                // https://stackoverflow.com/a/46280739
-                //JObject result = JsonConvert.DeserializeObject<JObject>(companyList);
-                Trades = JsonConvert.DeserializeObject<List<Trade>>(trades);
-                //trades = trades.GetRange(0, 50);
+                Trades = JsonConvert.DeserializeObject<List<Trade>>(trades);   
             }
 
             // fix the relations. By default the quotes do not have the company symbol
@@ -126,5 +122,7 @@ namespace API_Usage.Controllers
             return View("Trade", tradeViewModel);
         }
 
+        /*----------------------------------------------------------------------------------------------------*/
+        /*---------------------------------End of Largest Trades API!!!---------------------------------------*/
     }
 }
