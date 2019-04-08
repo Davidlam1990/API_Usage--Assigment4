@@ -13,7 +13,6 @@
         </h3>
 
         <br />
-        <br />
         The <a asp-area="" asp-controller="Home" asp-action="Symbols">Symbols</a> tab fetches symbols data from the
         <a href="https://iextrading.com/developer/docs/#reference-data">IEX Reference API </a> and displays the results.
         This data can also be saved in the local database.
@@ -42,15 +41,19 @@
         <br />
         The <a asp-area="" asp-controller="Highlights" asp-action="News">Latest Highlights</a> tab provides the latest news from stock markets to keep you updated on events.
         <a href="https://iextrading.com/developer/docs/#list">IEX Stock API</a>.
-        <br/>
+        <br />
         It also contains 3 sub tabs which provides below updates on the market.
-        <br/>
-        1.<a asp-area=" " asp-controller="Highlights" asp-action="TopGainers"> Top Gainers </a> provides information of the Top 10 Gainers of the day.
+        <br />
+        <ol>
+            <li><a asp-area=" " asp-controller="Highlights" asp-action="TopGainers"> Top Gainers </a> provides information of the Top 10 Gainers of the day.</li>
+            <li><a asp-area=" " asp-controller="Highlights" asp-action="TopLosers"> Top Losers </a>provides information of the Top 10 Losers of the day.</li>
+            <li><a asp-area=" " asp-controller="Highlights" asp-action="MostActive"> Most Active </a>provides information of the Most Active stocks of the day.</li>
+        </ol>
+        @*1.<a asp-area=" " asp-controller="Highlights" asp-action="TopGainers"> Top Gainers </a> provides information of the Top 10 Gainers of the day.
         <br />
         2.<a asp-area=" " asp-controller="Highlights" asp-action="TopLosers"> Top Losers </a>provides information of the Top 10 Losers of the day.
         <br/>
-        3.<a asp-area=" " asp-controller="Highlights" asp-action="MostActive"> Most Active </a>provides information of the Most Active stocks of the day.
-        <br />
+        3.<a asp-area=" " asp-controller="Highlights" asp-action="MostActive"> Most Active </a>provides information of the Most Active stocks of the day.*@
         <br />
         The <a asp-area="" asp-controller="Home" asp-action="Refresh">Refresh</a> tab let's you refresh the local database, that is, remove all its contents.
     </p>

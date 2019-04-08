@@ -5,7 +5,7 @@
 }
  */
 body {
-    background-color: lightgrey;
+    background-color: #FCF3CF; /*lightgrey   */
     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
     color: black;
 }
@@ -18,7 +18,7 @@ body {
 */
 
 .nav-bar {
-    background-color: dimgray;
+    background-color: forestgreen; /*dimgray*/
     color: ivory;
     font-size: x-large;
 }
