@@ -1,13 +1,15 @@
 ﻿@model IEnumerable<API_Usage.Models.MostActive>
 
 @{
-    ViewData["Title"] = "Most Active";
+    ViewData["Title"] = "MostActive";
 
 }
 <html>
 <head>
     <style>
-                       /* Create three equal columns that floats next to each other */
+        /* Create three equal columns that floats next to each other */
+
+        /* Create three equal columns that floats next to each other */
         .column {
             float: left;
             width: 100%;
@@ -17,15 +19,11 @@
             font-size: 100%;
         }
 
-            .column h1 {
-                text-align: center;
-                margin: 0;
-                color: maroon;
-            }
-
-            .column h3 {
-                margin: 0;
-            }
+        .h1 {
+            text-align: center;
+            margin: 1px;
+            color: maroon;
+        }
 
         /* Clear floats after the columns */
         .row:after {
@@ -41,6 +39,7 @@
         }
 
         td, th {
+            font-size: 90%;
             border: 1px solid #dddddd;
             text-align: left;
             padding: 1px;
@@ -53,16 +52,19 @@
 </head>
 <body>
     <nav>
-        <div>
+        <div class="h1" style="font-size:120%">
+            <br />
             <a asp-area="" asp-controller="Highlights" asp-action="News" class="Button">Latest News</a><text> | </text>
             <a asp-area="" asp-controller="Highlights" asp-action="TopGainers" class="Button">Top Gainers </a><text> | </text>
-            <a asp-area="" asp-controller="Highlights" asp-action="TopLosers" class="Button">Top Losers </a><text> | </text>
+            <a asp-area="" asp-controller="Highlights" asp-action="TopLosers" class="Button">Top Losers </a>
 
         </div>
     </nav>
-    <h4>
-        Most Active
-    </h4>
+    <br />
+    <h2 class="h1">
+        Most Active stocks of the day
+    </h2>
+    <br />
     <table class="column">
         <tbody>
             <tr style="font-weight:bold">
@@ -123,7 +125,11 @@
 
         </tbody>
     </table>
-
+    <td>
+        <a asp-controller="Highlights" asp-action="PopulateMostActive">
+            <img src="~/img/button_save-data.png" />
+        </a>
+    </td>
 
 
 
@@ -131,3 +137,6 @@
 </html>
 
 
+<script>
+    alertDbSave(@ViewBag.dbSuccessChart);
+</script>

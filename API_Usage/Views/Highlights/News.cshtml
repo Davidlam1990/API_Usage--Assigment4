@@ -19,11 +19,11 @@
             font-size: 100%;
         }
 
-            .h1 {
-                text-align: center;
-                margin: 0;
-                color: maroon;
-            }
+        .h1 {
+            text-align: center;
+            margin: 0;
+            color: maroon;
+        }
 
 
         /* Clear floats after the columns */
@@ -40,7 +40,7 @@
         }
 
         td, th {
-           font-size:90%;
+            font-size: 90%;
             border: 1px solid #dddddd;
             text-align: left;
             padding: 1px;
@@ -54,32 +54,42 @@
 
 <body>
     <nav>
-        <div>
+        <div class="h1" style="font-size:120%">
+            <br />
             <a asp-area=" " asp-controller="Highlights" asp-action="TopGainers" class="Button"> Top Gainers </a><text> | </text>
             <a asp-area=" " asp-controller="Highlights" asp-action="TopLosers" class="Button"> Top Losers </a><text> | </text>
-            <a asp-area=" " asp-controller="Highlights" asp-action="MostActive" class="Button"> Most Active </a><text> | </text>
+            <a asp-area=" " asp-controller="Highlights" asp-action="MostActive" class="Button"> Most Active </a>
         </div>
     </nav>
+    <br />
     <h2 class="h1">
         News Bulletin Board
-        <br />
-    </h2>
 
+    </h2>
+    <br />
     <table class="column">
 
         <tbody>
-            <tr style="font-weight:bold">
+            <tr style="font-weight:bold;border:2px">
                 <td> Headlines </td>
                 <td> Source </td>
                 <td> Last Published At </td>
-                <td>Summary</td>
+                
             </tr>
 
             @foreach (var item in Model)
             {
                 <tr>
                     <td>
-                        @Html.DisplayFor(modelItem => item.headline)
+                       
+                        <p style="font-weight:bold">@Html.DisplayFor(modelItem => item.headline)</p>
+                        <p style="font-weight:bold">Summary</p>
+                        @Html.DisplayFor(modelItem => item.summary)
+                        <br>
+                        For More Details refer:
+                        <a href=@Html.DisplayFor(modelItem => item.url)>@Html.DisplayFor(modelItem => item.url)</a>
+                        
+
                     </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.source)
@@ -87,13 +97,7 @@
                     <td>
                         @Html.DisplayFor(modelItem => item.datetime)
                     </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.summary)
-                        <br>
-                        For More Details refer:
-                        <a href=@Html.DisplayFor(modelItem => item.url)>@Html.DisplayFor(modelItem => item.url)</a>
-
-                    </td>
+                   
 
 
                 </tr>
@@ -103,9 +107,18 @@
         </tbody>
 
     </table>
+    <td>
+        <a asp-controller="Highlights" asp-action="PopulateNews">
+            <img src="~/img/button_save-data.png" />
+        </a>
+    </td>
+
+
 
 </body>
 </html>
+
+
 <script>
     alertDbSave(@ViewBag.dbSuccessChart);
 </script>

@@ -71,8 +71,32 @@ namespace API_Usage.Controllers
             {
                 NetDet = JsonConvert.DeserializeObject<List<News>>(Newsdetails);
             }
-           
+
             return NetDet;
+        }
+
+        public IActionResult PopulateNews()
+        {
+            // retrieve the companies that were saved in the symbols method
+            // saving in TempData is extremely inefficient - the data circles back from the browser
+            // better methods would be to serialize to the hard disk, or save directly into the database
+            //  in the symbols method. This example has been structured to demonstrate one way to save object data
+            //  and retrieve it later
+            List<News> NewsDetails = JsonConvert.DeserializeObject<List<News>>(TempData["NewsDetails"].ToString());
+
+            foreach (News news in NewsDetails)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                //So add company only if it doesnt exist, check existence using symbol (PK)
+                if (dbContext.News.Where(c => c.NewsID.Equals(news.NewsID)).Count() == 0)
+                {
+                    dbContext.News.Add(news);
+                }
+            }
+
+            dbContext.SaveChanges();
+            ViewBag.dbSuccessComp = 1;
+            return View("News", NewsDetails);
         }
         // **** For fetching data for top gainers****
         public IActionResult TopGainers()
@@ -112,9 +136,35 @@ namespace API_Usage.Controllers
                 TopG = JsonConvert.DeserializeObject<List<TopGainer>>(TGDetails);
 
             }
-            
+
             return TopG;
         }
+
+        public IActionResult PopulateTopGainers()
+        {
+            // retrieve the companies that were saved in the symbols method
+            // saving in TempData is extremely inefficient - the data circles back from the browser
+            // better methods would be to serialize to the hard disk, or save directly into the database
+            //  in the symbols method. This example has been structured to demonstrate one way to save object data
+            //  and retrieve it later
+            List<TopGainer> topGainers = JsonConvert.DeserializeObject<List<TopGainer>>(TempData["TGDetails"].ToString());
+
+
+            foreach (TopGainer topGainer in topGainers)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                //So add company only if it doesnt exist, check existence using symbol (PK)
+                if (dbContext.TopGainers.Where(c => c.symbol.Equals(topGainer.symbol)).Count() == 0)
+                {
+                    dbContext.TopGainers.Add(topGainer);
+                }
+            }
+
+            dbContext.SaveChanges();
+            ViewBag.dbSuccessComp = 1;
+            return View("TopGainers", topGainers);
+        }
+
         // **** For fetching data for top losers****
         public IActionResult TopLosers()
         {
@@ -153,10 +203,35 @@ namespace API_Usage.Controllers
                 TopL = JsonConvert.DeserializeObject<List<TopLoser>>(TLDetails);
 
             }
-           
+
 
 
             return TopL;
+        }
+
+        public IActionResult PopulateTopLosers()
+        {
+            // retrieve the companies that were saved in the symbols method
+            // saving in TempData is extremely inefficient - the data circles back from the browser
+            // better methods would be to serialize to the hard disk, or save directly into the database
+            //  in the symbols method. This example has been structured to demonstrate one way to save object data
+            //  and retrieve it later
+            List<TopLoser> topLosers = JsonConvert.DeserializeObject<List<TopLoser>>(TempData["TLDetails"].ToString());
+
+
+            foreach (TopLoser topLoser in topLosers)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                //So add company only if it doesnt exist, check existence using symbol (PK)
+                if (dbContext.TopLosers.Where(c => c.symbol.Equals(topLoser.symbol)).Count() == 0)
+                {
+                    dbContext.TopLosers.Add(topLoser);
+                }
+            }
+
+            dbContext.SaveChanges();
+            ViewBag.dbSuccessComp = 1;
+            return View("TopLosers", topLosers);
         }
         // **** For fetching data for Most actives****
         public IActionResult MostActive()
@@ -196,8 +271,32 @@ namespace API_Usage.Controllers
                 MA = JsonConvert.DeserializeObject<List<MostActive>>(MADetails);
 
             }
-           
+
             return MA;
+        }
+        public IActionResult PopulateMostActive()
+        {
+            // retrieve the companies that were saved in the symbols method
+            // saving in TempData is extremely inefficient - the data circles back from the browser
+            // better methods would be to serialize to the hard disk, or save directly into the database
+            //  in the symbols method. This example has been structured to demonstrate one way to save object data
+            //  and retrieve it later
+            List<MostActive> mostActive = JsonConvert.DeserializeObject<List<MostActive>>(TempData["MADetails"].ToString());
+
+
+            foreach (MostActive mostactive in mostActive)
+            {
+                //Database will give PK constraint violation error when trying to insert record with existing PK.
+                //So add company only if it doesnt exist, check existence using symbol (PK)
+                if (dbContext.MostActives.Where(c => c.symbol.Equals(mostactive.symbol)).Count() == 0)
+                {
+                    dbContext.MostActives.Add(mostactive);
+                }
+            }
+
+            dbContext.SaveChanges();
+            ViewBag.dbSuccessComp = 1;
+            return View("MostActive", mostActive);
         }
     }
 }

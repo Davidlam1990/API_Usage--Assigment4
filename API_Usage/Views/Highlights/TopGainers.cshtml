@@ -1,7 +1,7 @@
 ﻿@model IEnumerable<API_Usage.Models.TopGainer>
 
 @{
-    ViewData["Title"] = "Top Gainers";
+    ViewData["Title"] = "TopGainers";
 
 }
 <html>
@@ -19,15 +19,15 @@
             font-size: 100%;
         }
 
-            .column h1 {
-                text-align: center;
-                margin: 0;
-                color: maroon;
-            }
+        .h1 {
+            text-align: center;
+            margin: 1px;
+            color: maroon;
+        }
 
-            .column h3 {
-                margin: 0;
-            }
+        .column h3 {
+            margin: 0;
+        }
 
         /* Clear floats after the columns */
         .row:after {
@@ -43,6 +43,7 @@
         }
 
         td, th {
+            font-size: 90%;
             border: 1px solid #dddddd;
             text-align: left;
             padding: 1px;
@@ -55,15 +56,19 @@
 </head>
 <body>
     <nav>
-        <div>
+        <div class="h1" style="font-size:120%">
+            <br />
             <a asp-area="" asp-controller="Highlights" asp-action="News" class="Button">Latest News </a><text> | </text>
             <a asp-area="" asp-controller="Highlights" asp-action="TopLosers" class="Button">Top Losers </a><text> | </text>
-            <a asp-area="" asp-controller="Highlights" asp-action="MostActive" class="Button">Most Active </a><text> | </text>
+            <a asp-area="" asp-controller="Highlights" asp-action="MostActive" class="Button">Most Active </a>
         </div>
     </nav>
-    <h4>
-        Top Gainers of the Day
-    </h4>
+    </br>
+    <h2 class="h1">
+        Top Gainers of the day
+
+    </h2>
+    <br />
     <table class="column">
         <tbody>
             <tr style="font-weight:bold">
@@ -124,7 +129,11 @@
 
         </tbody>
     </table>
-
+    <td>
+        <a asp-controller="Highlights" asp-action="PopulateTopGainers">
+            <img src="~/img/button_save-data.png" />
+        </a>
+    </td>
 
 
 
@@ -132,3 +141,6 @@
 </html>
 
 
+<script>
+    alertDbSave(@ViewBag.dbSuccessChart);
+</script>
