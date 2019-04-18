@@ -17,6 +17,8 @@ namespace API_Usage.DataAccess
     public DbSet<TopGainer> TopGainers { get; set; }
     public DbSet<TopLoser> TopLosers { get; set; }
     public DbSet<MostActive> MostActives { get; set; }
+    public DbSet<Logo> Logos { get; set; }
+    public DbSet<CompanyDetail> CompanyDetails { get; set; }
 
     }
 }

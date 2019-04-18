@@ -1,0 +1,57 @@
+﻿@model LogoVM
+
+@{
+    ViewData["Title"] = "Company Logo";
+
+}
+
+<h2>Effective Spread</h2>
+<h4>Run symbols and save data if the drop down list is empty. Please contact IEX Trading if you have any questions about your data !</h4>
+<hr />
+<nav>
+    <div class="h1" style="font-size:120%">
+        <br />
+        <a asp-area="" asp-controller="Logo" asp-action="CompanyDetail" class="Button">Get Company Details</a><text>
+
+    </div>
+</nav>
+<br />
+<form asp-controller="Logo" asp-action="Logo" method="get">
+    <select name="symbol">
+        @foreach (var company in Model.Companies)
+        {
+            <option value=@company.symbol selected>@company.name</option>
+        }
+    </select>
+    <input type="submit" value="Get Logo" />
+</form>
+
+
+@if (Model.Current != null)
+{
+    var lg = Model.Current;
+    <hr />
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    Company Logo
+                    <table>
+                        <tr>
+                            <td>
+                                <img src=" @lg.URL">
+
+                            </td>
+                        </tr>
+
+                    </table>
+                </td>
+
+            </tr>
+        </tbody>
+    </table>
+}
+
+<script>
+    alertDbSave(@ViewBag.dbSuccessChart);
+</script>

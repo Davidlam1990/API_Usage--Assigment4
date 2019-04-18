@@ -23,6 +23,14 @@
         The quote can also be saved in the local database.
         <br />
         <br />
+        The <a asp-area="" asp-controller="Logo" asp-action="CompanyDetail">Company Information</a> tab let you select a Company(symbol) and fetches a company details like CEO, website, industry, sector etc. from
+        <a href="https://iextrading.com/developer/docs/#company">IEX Stock API</a>.
+        <br />
+        It also provides a link for checking Company's Logo <a asp-area=" " asp-controller="Logo" asp-action="Logo">Company Logo </a>
+        based on the selection made in the dropdown from
+        <a href="https://iextrading.com/developer/docs/#logo">IEX Stock API</a>.
+        <br />
+        <br />
         The <a asp-area="" asp-controller="Trade" asp-action="Trade">Largest Trades</a> tab provides information on largest orders on the market.
         <a href="https://iextrading.com/developer/docs/#largest-trades">IEX Stock API</a>.
         <br />

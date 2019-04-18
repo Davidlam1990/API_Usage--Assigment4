@@ -1,0 +1,121 @@
+﻿@model CompanyDetailVM
+
+@{
+    ViewData["Title"] = "Company Information";
+    Logo Logos = ViewData["Logo"] as Logo;
+}
+
+<h2>Effective Spread</h2>
+<h4>Run symbols and save data if the drop down list is empty. Please contact IEX Trading if you have any questions about your data !</h4>
+<hr />
+<nav>
+    <div class="h1" style="font-size:120%">
+        <br />
+        <a asp-area="" asp-controller="Logo" asp-action="Logo" class="Button">See Company Logo</a><text>
+
+    </div>
+</nav>
+<br />
+<form asp-controller="Logo" asp-action="CompanyDetail" method="get">
+    <select name="symbol">
+        @foreach (var company in Model.Companies)
+        {
+            <option value=@company.symbol selected>@company.name</option>
+        }
+    </select>
+    <input type="submit" value="Get Company Information" />
+</form>
+
+
+@if (Model.CurrentCD != null)
+{
+    var compdet = Model.CurrentCD;
+    <hr />
+    <table>
+        <tbody>
+            <tr>
+                <td>
+                    Company's Information
+                    <table>
+                        <tr>
+                            <td>
+                                Symbol
+                            </td>
+                            <td>
+                                @compdet.symbol
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                CompanyName
+                            </td>
+                            <td>
+                                @compdet.companyName
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                CEO
+                            </td>
+                            <td>
+                                @compdet.CEO
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Exchange
+                            </td>
+                            <td>
+                                @compdet.exchange
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Industry
+                            </td>
+                            <td>
+                                @compdet.industry
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Sector
+                            </td>
+                            <td>
+                                @compdet.sector
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Website
+                            </td>
+                            <td>
+                                <a href=@compdet.website>@compdet.website</a>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Company Description
+                            </td>
+                            <td>
+                                @compdet.description
+                            </td>
+                        </tr>
+
+                    </table>
+                </td>
+
+            </tr>
+        </tbody>
+    </table>
+}
+
+
+
+
+<script>
+    alertDbSave(@ViewBag.dbSuccessChart);
+</script>
